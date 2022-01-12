@@ -71,7 +71,8 @@
     "stats-webpack-plugin": "^0.6.1",
     "uglify-loader": "^2.0.0",
     "url-loader": "^0.5.9",
-    "worker-loader": "^0.8.1"
+    "worker-loader": "^0.8.1",
+    "yarn-audit-fix": "^9.0.6"
   },
   "build": {
     "appId": "com.eponymous.franchise",
@@ -94,5 +95,13 @@
   },
   "author": "Eponymous Labs, Inc.",
   "repository": "git@github.com:HVF/franchise.git",
-  "main": "electron.js"
+  "main": "electron.js",
+  "resolutions": {
+    "lodash": "^4.17.21",
+    "nwb/*/*/*/*/xmlhttprequest-ssl": "1.6.2",
+    "lint-staged/*/property-expr": "2.0.3",
+    "nwb/*/growl": "1.10.5",
+    "nwb/*/*/*/cryptiles": "4.1.2",
+    "lint-staged/*/*/*/*/*/set-value": "2.0.1"
+  }
 }
