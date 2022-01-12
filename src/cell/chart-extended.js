@@ -5,6 +5,13 @@ import CJS from 'chart.js'
 
 import _ from 'lodash'
 
+function truncateLabel(value) {
+    if (value.length > 13) {
+        return value.substr(0, 10) + '...'
+    }
+    return value
+}
+
 var CHART_COLORS = [
     'black',
     'silver',
@@ -365,6 +372,110 @@ export class BubbleChartVisualizer extends ChartVisualizer {
             <div style={{ flex: 1, overflow: 'auto' }} className="chart-container">
                 <Chart
                     type="bubble"
+                    options={options}
+                    data={{
+                        labels,
+                        datasets,
+                    }}
+                />
+            </div>
+        )
+    }
+}
+
+export class HistogramChartVisualizer extends ChartVisualizer {
+    static key = 'histogram-chart'
+    static desc = 'Histogram Chart'
+    static icon = <i className="fa fa-signal" aria-hidden="true" />
+
+    render() {
+        let { result, view } = this.props
+
+        // result.values is rows of [v1,v2,v3]
+
+        let label_index =
+            result.columns.map((k, i) => i).find((i) => isNaN(+result.values[0][i])) || 0
+        let numeric_col_indices = result.columns
+            .map((k, i) => i)
+            .filter((k) => !isNaN(+result.values[0][k]) && k != label_index)
+
+        let valid_row_indicies = result.values
+            .map((v, i) => [v, i])
+            .filter(([v, i]) => numeric_col_indices.every((index) => v[index] != null))
+            .map(([v, i]) => i)
+
+        const labels = valid_row_indicies.map((index) => result.values[index][label_index])
+
+        const color = (r, alpha) => 'hsla(' + r * 255 + ', 100%, 50%, ' + alpha + ')'
+
+        const datasets = numeric_col_indices.map((j, i) => {
+            const r = i / numeric_col_indices.length
+            const data = valid_row_indicies.map((index) => result.values[index][j])
+
+            return {
+                borderColor: color(r, 0.4),
+                backgroundColor: color(r, 0.2),
+                hoverBackgroundColor: color(r, 0.4),
+                // pointBorderColor: 'transparent',
+                // pointBackgroundColor: 'transparent',
+                // pointHoverBackgroundColor: color(r, .4),
+                fill: data.every((d) => d >= 0) && (i ? '-1' : 'start'),
+                label: result.columns[j],
+                stack: 'stack1',
+                data,
+            }
+        })
+
+        const options = {
+            animation: false,
+            tooltips: {
+                mode: 'index',
+                intersect: true,
+            },
+            scales: {
+                xAxes: [
+                    {
+                        display: false,
+                        barPercentage: 1.3,
+                        ticks: {
+                            max: 3,
+                            callback: truncateLabel,
+                        },
+                        gridLines: {
+                            drawOnChartArea: false,
+                        },
+                    },
+                    {
+                        display: true,
+                        ticks: {
+                            autoSkip: false,
+                            max: 4,
+                        },
+                        gridLines: {
+                            drawOnChartArea: false,
+                        },
+                    },
+                ],
+                yAxes: [
+                    {
+                        ticks: {
+                            beginAtZero: true,
+                        },
+                        gridLines: {
+                            drawOnChartArea: false,
+                        },
+                    },
+                ],
+            },
+            maintainAspectRatio: false,
+            responsive: true,
+        }
+
+        // select "name", "population", "area" * 100 from "geo_states" limit 10
+        return (
+            <div style={{ flex: 1, overflow: 'auto' }} className="chart-container">
+                <Chart
+                    type="bar"
                     options={options}
                     data={{
                         labels,
