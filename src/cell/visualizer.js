@@ -4,6 +4,7 @@ import _ from 'lodash'
 import { CartoVisualizer } from './carto'
 import { PivotVisualizer, TableVisualizer, CardVisualizer } from './table'
 import { LineChartVisualizer, BarChartVisualizer, Chart2DVisualizer } from './chart'
+import { DoughnutChartVisualizer } from './chart-extended'
 import { Position, Tooltip as BlueprintTooltip } from '@blueprintjs/core'
 import { ExplainVisualizer } from './explain'
 
@@ -351,6 +352,7 @@ const Visualizers = [
     LineChartVisualizer,
     BarChartVisualizer,
     Chart2DVisualizer,
+    DoughnutChartVisualizer,
     MapVisualizer,
     DownloadVisualizer,
     CartoVisualizer,
