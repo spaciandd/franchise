@@ -338,9 +338,18 @@ export class BubbleChartVisualizer extends ChartVisualizer {
 
         const color = (r, alpha) => 'hsla(' + r * 255 + ', 100%, 50%, ' + alpha + ')'
 
+        let data = []
+        result.values.forEach(function(item, i) {
+            data.push({
+                x: i,
+                y: item[0],
+                r: item[1],
+            })
+        })
+
         const datasets = numeric_col_indices.map((j, i) => {
             const r = i / numeric_col_indices.length
-            const data = valid_row_indicies.map((index) => result.values[index][j])
+            //const data = valid_row_indicies.map((index) => result.values[index][j])
 
             return {
                 borderColor: color(r, 0.4),
