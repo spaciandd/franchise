@@ -338,6 +338,7 @@ export class BubbleChartVisualizer extends ChartVisualizer {
 
         const color = (r, alpha) => 'hsla(' + r * 255 + ', 100%, 50%, ' + alpha + ')'
 
+        // format data to {x,y,r}
         let data = []
         result.values.forEach(function(item, i) {
             data.push({
@@ -349,7 +350,6 @@ export class BubbleChartVisualizer extends ChartVisualizer {
 
         const datasets = numeric_col_indices.map((j, i) => {
             const r = i / numeric_col_indices.length
-            //const data = valid_row_indicies.map((index) => result.values[index][j])
 
             return {
                 borderColor: color(r, 0.4),
@@ -444,7 +444,7 @@ export class HistogramChartVisualizer extends ChartVisualizer {
             scales: {
                 xAxes: [
                     {
-                        display: false,
+                        display: true,
                         barPercentage: 1.3,
                         ticks: {
                             max: 3,
@@ -455,7 +455,7 @@ export class HistogramChartVisualizer extends ChartVisualizer {
                         },
                     },
                     {
-                        display: true,
+                        display: false,
                         ticks: {
                             autoSkip: false,
                             max: 4,
