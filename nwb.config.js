@@ -4,12 +4,12 @@ var webpack = require('webpack')
 module.exports = {
     type: 'react-app',
     webpack: {
-        node: {
-            fs: 'empty',
-            net: 'empty',
-            tls: 'empty',
-        },
         extra: {
+            node: {
+                fs: 'empty',
+                net: 'empty',
+                tls: 'empty',
+            },
             plugins: [
                 new StatsPlugin('stats.json', {
                     chunkModules: true,
