@@ -9,6 +9,7 @@ import {
     RadarChartVisualizer,
     BubbleChartVisualizer,
     HistogramChartVisualizer,
+    BoxplotChartVisualizer,
 } from './chart-extended'
 import { Position, Tooltip as BlueprintTooltip } from '@blueprintjs/core'
 import { ExplainVisualizer } from './explain'
@@ -361,6 +362,7 @@ const Visualizers = [
     RadarChartVisualizer,
     BubbleChartVisualizer,
     HistogramChartVisualizer,
+    BoxplotChartVisualizer,
     MapVisualizer,
     DownloadVisualizer,
     CartoVisualizer,
