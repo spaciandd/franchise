@@ -8695,6 +8695,11 @@ packet-reader@1.0.0:
   resolved "https://registry.npmjs.org/packet-reader/-/packet-reader-1.0.0.tgz"
   integrity sha512-HAKu/fG3HpHFO0AA8WE8q2g+gBJaZ9MG7fcKk+IJPLTGAD6Psw4443l+9DGRbOIh3/aXr7Phy0TjilYivJo5XQ==
 
+pako@^2.0.3:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/pako/-/pako-2.0.4.tgz#6cebc4bbb0b6c73b0d5b8d7e8476e2b2fbea576d"
+  integrity sha512-v8tweI900AUkZN6heMU/4Uy4cXRc2AYNRggVmTR+dEncawDJgCdLMximOVA2p4qO57WMynangsfGRb5WD6L1Bg==
+
 pako@~1.0.5:
   version "1.0.10"
   resolved "https://registry.npmjs.org/pako/-/pako-1.0.10.tgz"
@@ -11161,6 +11166,13 @@ spdy@^3.4.1:
     safe-buffer "^5.0.1"
     select-hose "^2.0.0"
     spdy-transport "^2.0.18"
+
+spl.js@0.1.0-beta.1:
+  version "0.1.0-beta.1"
+  resolved "https://registry.yarnpkg.com/spl.js/-/spl.js-0.1.0-beta.1.tgz#7a517b71f776b6a72537555d6745c55fccf572b8"
+  integrity sha512-RVdBduf1F2tzELqoNjylZsrKqDaSlBn98VWXRHqIsHSAigDWPZj5TMD5xlrKqgemcxiVek1qJYxLMsVPKdwrKw==
+  dependencies:
+    pako "^2.0.3"
 
 split-array-stream@^1.0.0:
   version "1.0.3"

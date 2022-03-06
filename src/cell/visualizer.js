@@ -171,6 +171,7 @@ class MapVisualizer extends React.Component {
     static icon = <i className="fa fa-map-marker" aria-hidden="true" />
 
     static test(result) {
+        console.log(result.spatial)
         return (
             result.columns.some((k) =>
                 ['lat', 'latitude', 'lattitude'].includes(k.toLowerCase())

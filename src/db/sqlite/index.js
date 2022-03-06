@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 
+import SPL from 'spl.js'
+
 import * as State from '../../state'
 import * as U from '../../state/update'
 
@@ -9,7 +11,7 @@ import SQLiteWorker from 'worker-loader!./worker.js'
 // import * as SQLGenerate from 'sqlgenerate'
 
 export const key = 'sqlite'
-export const name = 'SQLite'
+export const name = 'SQLite (spatialite+gpkg)'
 export const syntax = 'text/x-sqlite'
 import 'whatwg-fetch'
 
@@ -38,6 +40,7 @@ const drop = (e) => {
 }
 
 const _ACCEPT_FT = [
+    'gpkg',
     'sql',
     'json',
     'jsonl',
@@ -91,9 +94,14 @@ export class Configure extends Component {
         const { config, connect } = this.props
         return (
             <div>
-                <img src={require('../img/sqlite.svg')} style={{ height: 40 }} />
-                <p>Franchise includes an in-browser version of the powerful SQLite engine.</p>
-
+                <img src={require('../img/sqlite.svg')} style={{ height: 40 }} /> &nbsp;&nbsp;
+                <img src={require('../img/spatialite.png')} style={{ height: 50 }} />{' '}
+                &nbsp;&nbsp;&nbsp;
+                <img src={require('../img/geopkg.png')} style={{ height: 50 }} />
+                <p>
+                    Franchise includes an in-browser version of the powerful SQLite{' '}
+                    <b>(Spatialite and GPKG enabled)</b> engine.
+                </p>
                 <input
                     style={{
                         position: 'absolute',
@@ -105,7 +113,6 @@ export class Configure extends Component {
                     ref={(e) => (this.picker = e)}
                     onChange={(e) => connectDB(e.target)}
                 />
-
                 {connect.status == 'connected' ? (
                     <div>
                         <button
@@ -121,7 +128,8 @@ export class Configure extends Component {
                     <div style={{ opacity: connect.status == 'connecting' ? 0.5 : 1 }}>
                         <p>
                             Click the button below to browse for <b>CSV</b>, <b>XLSX</b>,{' '}
-                            <b>JSON</b>, <b>SQLite</b>, or <b>SQL</b> files on your computer.
+                            <b>JSON</b>, <b>SQLite</b>, <b>GPKG</b> or <b>SQL</b> files on your
+                            computer.
                         </p>
                         <div style={{ display: 'flex', alignItems: 'flex-end' }}>
                             <div
@@ -283,7 +291,7 @@ export async function connectDB(picker, name) {
             })
         }
         // const DATA =
-        console.log(file)
+        console.log(file.byteLength)
 
         let sqlite = await makeSqlite(file, name)
 
@@ -303,6 +311,8 @@ async function disconnectDB() {
 
 async function _runCommand(...args) {
     let result = await State.get('connect', '_sqlite').runCommand(...args)
+    console.log('----------ttt')
+    console.log(result)
     return result
 }
 
@@ -318,12 +328,18 @@ export async function exportData() {
 async function getSchema() {
     var table_list = await _runCommand({
         action: 'exec',
-        sql: 'SELECT name, sql FROM sqlite_master where type = "table"',
+        sql:
+            "SELECT name, sql FROM sqlite_master where type = 'table' and name = 'building_points'",
     })
+    console.log(table_list)
     if (table_list.results.length < 1) return []
 
-    return table_list.results[0].values.map(([name, sql]) => {
+    let vals = table_list.results[0].values
+    // vals = [vals[0]]
+
+    return vals.map(([name, sql]) => {
         let ast = SQLParser(sql)
+        console.log(ast)
         return {
             name: name,
             columns: ast.statement[0].definition
@@ -335,7 +351,7 @@ async function getSchema() {
 
 export async function run(query, cellId) {
     let expandedQuery = expandQueryRefs(query, cellId)
-    console.log(expandedQuery)
+    console.log('Expanded QUERY', expandedQuery)
     let result = await _runQueryFixSQLite(expandedQuery)
     result.query = query
     State.apply('connect', 'schema', U.replace(await getSchema()))
@@ -383,11 +399,14 @@ async function _runQueryFixSQLite(query) {
 
 // https://sqlite.org/lang.html
 async function makeSqlite(buffer, sname) {
+    const spl = await SPL()
+    var db
     var worker = new SQLiteWorker()
     var replyQueue = [],
         rejectQueue = []
     var messageCounter = 0
     worker.onmessage = function(event) {
+        console.log(event.data)
         replyQueue[event.data.id](event.data)
         rejectQueue.shift()
     }
@@ -403,15 +422,54 @@ async function makeSqlite(buffer, sname) {
             worker.postMessage(packet)
         })
     }
+    function runCommandCoreSS(packet) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const result = {
+                    ready: false,
+                }
+                if (packet.action == 'open') {
+                    db = await spl.db(buffer).exec('select enablegpkgamphibiousmode()')
+                    result.ready = true
+                } else if (packet.action == 'exec') {
+                    const r = await db.exec(packet.sql).get
+                    // console.log(updated_counter)
+                    result.results = [
+                        {
+                            columns: await r.cols,
+                            values: await r.rows,
+                        },
+                    ]
+                } else if (packet.action == 'export') {
+                    result.buffer = await db.save()
+                } else {
+                    throw new Error("Unhandled action type: '" + packet.action + "'")
+                }
+                resolve(result)
+            } catch (e) {
+                console.log('Worker error: ', e)
+                reject(e)
+            }
+        })
+    }
     var startup = await runCommandCore({
         action: 'open',
         buffer,
         sname,
     })
+
+    // const tables = await db.exec("select name, sql from sqlite_master where type = 'table'").get;
+    // console.log("AHAHAHHAHHHAHAHAHHAHAHHA");
+    // console.log({
+    //     columns: await tables.cols,
+    //     values: await tables.rows
+    // });
+
     return {
         worker: worker,
         async runCommand(command) {
             if (!(await startup).ready) throw new Error('Failed to initialize database!')
+            // console.log(command)
             return await runCommandCore(command)
         },
     }
