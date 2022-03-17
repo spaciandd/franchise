@@ -452,7 +452,7 @@ async function makeSqlite(buffer, sname) {
             }
         })
     }
-    var startup = await runCommandCore({
+    var startup = await runCommandCoreSS({
         action: 'open',
         buffer,
         sname,
@@ -470,7 +470,7 @@ async function makeSqlite(buffer, sname) {
         async runCommand(command) {
             if (!(await startup).ready) throw new Error('Failed to initialize database!')
             // console.log(command)
-            return await runCommandCore(command)
+            return await runCommandCoreSS(command)
         },
     }
 }
