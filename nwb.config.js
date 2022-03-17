@@ -23,13 +23,15 @@ module.exports = {
 
         publicPath: '',
         uglify: {
-            compress: {
-                warnings: false,
+            uglifyOptions: {
+                sourceMap: true,
+                compress: {
+                    warnings: false,
+                },
+                output: {
+                    comments: false,
+                },
             },
-            output: {
-                comments: false,
-            },
-            sourceMap: true,
             exclude: /worker\.js/,
         },
     },

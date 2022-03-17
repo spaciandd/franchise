@@ -39,6 +39,9 @@ const drop = (e) => {
     connectDB(e.dataTransfer)
 }
 
+const exclude_tables =
+    "'spatial_ref_sys', 'spatialite_history', 'sqlite_sequence', 'geometry_columns', 'spatial_ref_sys_aux', 'views_geometry_columns', 'virts_geometry_columns', 'geometry_columns_statistics', 'views_geometry_columns_statistics', 'virts_geometry_columns_statistics', 'geometry_columns_field_infos', 'views_geometry_columns_field_infos', 'virts_geometry_columns_field_infos', 'geometry_columns_time', 'geometry_columns_auth', 'views_geometry_columns_auth', 'virts_geometry_columns_auth', 'sql_statements_log', 'SpatialIndex', 'ElementaryGeometries'"
+
 const _ACCEPT_FT = [
     'gpkg',
     'sql',
@@ -329,7 +332,9 @@ async function getSchema() {
     var table_list = await _runCommand({
         action: 'exec',
         sql:
-            "SELECT name, sql FROM sqlite_master where type = 'table' and name = 'building_points'",
+            "SELECT name, sql FROM sqlite_master where type = 'table' and tbl_name not like 'idx_%' and tbl_name not in (" +
+            exclude_tables +
+            ')',
     })
     console.log(table_list)
     if (table_list.results.length < 1) return []
@@ -428,8 +433,23 @@ async function makeSqlite(buffer, sname) {
                 const result = {
                     ready: false,
                 }
+                // console.log(new URL('../data/proj/proj.db', window.location.href))
                 if (packet.action == 'open') {
-                    db = await spl.db(buffer).exec('select enablegpkgamphibiousmode()')
+                    db = await spl
+                        .mount('proj', [
+                            // Mounts proj.db required for transformation to the default path (proj/proj.db) as remote db.
+                            // Instead of downloading the entire db spl/sqlite will only fetch required db pages.
+                            {
+                                name: 'proj.db',
+                                data: new URL(
+                                    '../data/proj/proj.db',
+                                    window.location.href
+                                ).toString(),
+                            },
+                        ])
+                        .db(buffer)
+                        .exec('select enablegpkgamphibiousmode()')
+                        .exec('select initspatialmetadata(1)')
                     result.ready = true
                 } else if (packet.action == 'exec') {
                     const r = await db.exec(packet.sql).get
