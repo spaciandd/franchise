@@ -335,7 +335,7 @@ async function getSchema() {
     var table_list = await _runCommand({
         action: 'exec',
         sql:
-            "SELECT name, sql FROM sqlite_master where type = 'table' and tbl_name not like 'idx_%' and tbl_name not in (" +
+            "SELECT name, sql FROM sqlite_master where type = 'table' and tbl_name not like 'idx_%' and tbl_name not like 'rtree_%' and tbl_name not like 'gpkg_%' and tbl_name not in (" +
             exclude_tables +
             ')',
     })
