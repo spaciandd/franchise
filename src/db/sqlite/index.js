@@ -39,6 +39,8 @@ const drop = (e) => {
     connectDB(e.dataTransfer)
 }
 
+// SELECT name, sql FROM sqlite_master where type = 'table' and tbl_name not like 'idx_%' and tbl_name not in ('spatial_ref_sys', 'spatialite_history', 'sqlite_sequence', 'geometry_columns', 'spatial_ref_sys_aux', 'views_geometry_columns', 'virts_geometry_columns', 'geometry_columns_statistics', 'views_geometry_columns_statistics', 'virts_geometry_columns_statistics', 'geometry_columns_field_infos', 'views_geometry_columns_field_infos', 'virts_geometry_columns_field_infos', 'geometry_columns_time', 'geometry_columns_auth', 'views_geometry_columns_auth', 'virts_geometry_columns_auth', 'sql_statements_log', 'SpatialIndex', 'ElementaryGeometries')
+
 const exclude_tables =
     "'spatial_ref_sys', 'spatialite_history', 'sqlite_sequence', 'geometry_columns', 'spatial_ref_sys_aux', 'views_geometry_columns', 'virts_geometry_columns', 'geometry_columns_statistics', 'views_geometry_columns_statistics', 'virts_geometry_columns_statistics', 'geometry_columns_field_infos', 'views_geometry_columns_field_infos', 'virts_geometry_columns_field_infos', 'geometry_columns_time', 'geometry_columns_auth', 'views_geometry_columns_auth', 'virts_geometry_columns_auth', 'sql_statements_log', 'SpatialIndex', 'ElementaryGeometries'"
 
@@ -285,7 +287,8 @@ export async function connectDB(picker, name) {
 
         let file = await readFile(picker)
 
-        if (file && file.byteLength && file.byteLength > 10000000) {
+        if (file && file.byteLength && file.byteLength > 20000000) {
+            // 20mb limit
             await swal.fire({
                 title: 'Large Files Not Supported',
                 text:
@@ -342,16 +345,22 @@ async function getSchema() {
     let vals = table_list.results[0].values
     // vals = [vals[0]]
 
-    return vals.map(([name, sql]) => {
+    const ast_array = []
+
+    vals.forEach(([name, sql]) => {
         let ast = SQLParser(sql)
         console.log(ast)
-        return {
-            name: name,
-            columns: ast.statement[0].definition
-                .filter((k) => k.variant == 'column')
-                .map((k) => k.name),
+        if (ast.statement[0].definition) {
+            ast_array.push({
+                name: name,
+                columns: ast.statement[0].definition
+                    .filter((k) => k.variant == 'column')
+                    .map((k) => k.name),
+            })
         }
     })
+
+    return ast_array
 }
 
 export async function run(query, cellId) {
@@ -449,7 +458,11 @@ async function makeSqlite(buffer, sname) {
                         ])
                         .db(buffer)
                         .exec('select enablegpkgamphibiousmode()')
-                        .exec('select initspatialmetadata(1)')
+                    try {
+                        db = await db.exec('select initspatialmetadata(1)')
+                    } catch (err) {
+                        console.log(err)
+                    }
                     result.ready = true
                 } else if (packet.action == 'exec') {
                     const r = await db.exec(packet.sql).get
