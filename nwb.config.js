@@ -22,18 +22,7 @@ module.exports = {
         },
 
         publicPath: '',
-        uglify: {
-            uglifyOptions: {
-                sourceMap: true,
-                compress: {
-                    warnings: false,
-                },
-                output: {
-                    comments: false,
-                },
-            },
-            exclude: /worker\.js/,
-        },
+        uglify: false,
     },
     babel: {
         stage: 1,
