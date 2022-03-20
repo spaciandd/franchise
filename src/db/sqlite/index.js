@@ -287,8 +287,7 @@ export async function connectDB(picker, name) {
 
         let file = await readFile(picker)
 
-        if (file && file.byteLength && file.byteLength > 20000000) {
-            // 20mb limit
+        if (file && file.byteLength && file.byteLength > 10000000) {
             await swal.fire({
                 title: 'Large Files Not Supported',
                 text:
@@ -297,7 +296,7 @@ export async function connectDB(picker, name) {
             })
         }
         // const DATA =
-        console.log(file.byteLength)
+        // console.log(file.byteLength)
 
         let sqlite = await makeSqlite(file, name)
 
@@ -442,28 +441,28 @@ async function makeSqlite(buffer, sname) {
                 const result = {
                     ready: false,
                 }
-                // console.log(new URL('../data/proj/proj.db', window.location.href))
+                // console.log((new URL('/proj/proj.db', window.location.href)).toString())
                 if (packet.action == 'open') {
+                    const projdb = await fetch('proj.db').then((response) => response.blob())
                     db = await spl
                         .mount('proj', [
                             // Mounts proj.db required for transformation to the default path (proj/proj.db) as remote db.
                             // Instead of downloading the entire db spl/sqlite will only fetch required db pages.
                             {
                                 name: 'proj.db',
-                                data: new URL(
-                                    '../data/proj/proj.db',
-                                    window.location.href
-                                ).toString(),
+                                data: projdb,
                             },
                         ])
                         .db(buffer)
                         .exec('select enablegpkgamphibiousmode()')
+
                     try {
                         db = await db.exec('select initspatialmetadata(1)')
+                        result.ready = true
                     } catch (err) {
                         console.log(err)
+                        result.ready = true
                     }
-                    result.ready = true
                 } else if (packet.action == 'exec') {
                     const r = await db.exec(packet.sql).get
                     // console.log(updated_counter)
