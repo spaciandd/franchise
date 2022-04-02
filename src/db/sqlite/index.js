@@ -316,8 +316,6 @@ async function disconnectDB() {
 
 async function _runCommand(...args) {
     let result = await State.get('connect', '_sqlite').runCommand(...args)
-    console.log('----------ttt')
-    console.log(result)
     return result
 }
 
@@ -326,8 +324,6 @@ export async function exportData() {
     return {
         dump: Buffer.from(result.buffer).toString('base64'),
     }
-    // console.log(result)
-    // return result
 }
 
 async function getSchema() {
@@ -338,7 +334,7 @@ async function getSchema() {
             exclude_tables +
             ')',
     })
-    console.log(table_list)
+    // console.log(table_list)
     if (table_list.results.length < 1) return []
 
     let vals = table_list.results[0].values
@@ -348,7 +344,7 @@ async function getSchema() {
 
     vals.forEach(([name, sql]) => {
         let ast = SQLParser(sql)
-        console.log(ast)
+        // console.log(ast)
         if (ast.statement[0].definition) {
             ast_array.push({
                 name: name,
@@ -365,6 +361,7 @@ async function getSchema() {
 export async function run(query, cellId) {
     let expandedQuery = expandQueryRefs(query, cellId)
     console.log('Expanded QUERY', expandedQuery)
+    // throw new Error("tutf");
     let result = await _runQueryFixSQLite(expandedQuery)
     result.query = query
     State.apply('connect', 'schema', U.replace(await getSchema()))
@@ -377,6 +374,7 @@ export async function run(query, cellId) {
 // SQLite doesn't display column names for SELECT with no rows
 async function _runQueryFixSQLite(query) {
     var response = await _runCommand({ action: 'exec', sql: query })
+    console.log(response)
     let result = response.results[response.results.length - 1] || {}
 
     result.astInput = query
@@ -412,8 +410,6 @@ async function _runQueryFixSQLite(query) {
 
 // https://sqlite.org/lang.html
 async function makeSqlite(buffer, sname) {
-    const spl = await SPL()
-    var db
     var worker = new SQLiteWorker()
     var replyQueue = [],
         rejectQueue = []
@@ -435,74 +431,19 @@ async function makeSqlite(buffer, sname) {
             worker.postMessage(packet)
         })
     }
-    function runCommandCoreSS(packet) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const result = {
-                    ready: false,
-                }
-                // console.log((new URL('/proj/proj.db', window.location.href)).toString())
-                if (packet.action == 'open') {
-                    const projdb = await fetch('proj.db').then((response) => response.blob())
-                    db = await spl
-                        .mount('proj', [
-                            // Mounts proj.db required for transformation to the default path (proj/proj.db) as remote db.
-                            // Instead of downloading the entire db spl/sqlite will only fetch required db pages.
-                            {
-                                name: 'proj.db',
-                                data: projdb,
-                            },
-                        ])
-                        .db(buffer)
-                        .exec('select enablegpkgamphibiousmode()')
 
-                    try {
-                        db = await db.exec('select initspatialmetadata(1)')
-                        result.ready = true
-                    } catch (err) {
-                        console.log(err)
-                        result.ready = true
-                    }
-                } else if (packet.action == 'exec') {
-                    const r = await db.exec(packet.sql).get
-                    // console.log(updated_counter)
-                    result.results = [
-                        {
-                            columns: await r.cols,
-                            values: await r.rows,
-                        },
-                    ]
-                } else if (packet.action == 'export') {
-                    result.buffer = await db.save()
-                } else {
-                    throw new Error("Unhandled action type: '" + packet.action + "'")
-                }
-                resolve(result)
-            } catch (e) {
-                console.log('Worker error: ', e)
-                reject(e)
-            }
-        })
-    }
-    var startup = await runCommandCoreSS({
+    var startup = await runCommandCore({
         action: 'open',
         buffer,
         sname,
     })
-
-    // const tables = await db.exec("select name, sql from sqlite_master where type = 'table'").get;
-    // console.log("AHAHAHHAHHHAHAHAHHAHAHHA");
-    // console.log({
-    //     columns: await tables.cols,
-    //     values: await tables.rows
-    // });
 
     return {
         worker: worker,
         async runCommand(command) {
             if (!(await startup).ready) throw new Error('Failed to initialize database!')
             // console.log(command)
-            return await runCommandCoreSS(command)
+            return await runCommandCore(command)
         },
     }
 }

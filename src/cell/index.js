@@ -354,6 +354,7 @@ export async function runCell(cellId) {
             suggestedName: cell.suggestedName || result.suggestedName,
         })
     } catch (err) {
+        // console.log(err)
         updateCell(cellId, { loading: false, result: null, error: err.message })
     }
 }

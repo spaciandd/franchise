@@ -11167,10 +11167,10 @@ spdy@^3.4.1:
     select-hose "^2.0.0"
     spdy-transport "^2.0.18"
 
-spl.js@0.1.0-beta.1:
-  version "0.1.0-beta.1"
-  resolved "https://registry.yarnpkg.com/spl.js/-/spl.js-0.1.0-beta.1.tgz#7a517b71f776b6a72537555d6745c55fccf572b8"
-  integrity sha512-RVdBduf1F2tzELqoNjylZsrKqDaSlBn98VWXRHqIsHSAigDWPZj5TMD5xlrKqgemcxiVek1qJYxLMsVPKdwrKw==
+spl.js@0.1.0-beta.3:
+  version "0.1.0-beta.3"
+  resolved "https://registry.yarnpkg.com/spl.js/-/spl.js-0.1.0-beta.3.tgz#1c67458ea36dd8739b135fd29a44a22e68a06938"
+  integrity sha512-IZUaZWvQ/xJmuEamJy9NnivqMHYZpZmoH4cJlafSE/1s+MAUqEhrMCaOvLherrLuzrOkXQ8TdoHkywZEd0/dzA==
   dependencies:
     pako "^2.0.3"
 
@@ -11212,11 +11212,6 @@ sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.0.3.tgz"
   integrity sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=
-
-sql.js@^0.4.0:
-  version "0.4.0"
-  resolved "https://registry.npmjs.org/sql.js/-/sql.js-0.4.0.tgz"
-  integrity "sha1-I76WNVIOsP9Dp0Hn6DA5cmbohEU= sha512-pIvpttdtwmLJgXfgzDPYx28IK/GJvW8tAEdbOfmE8KSkPSQpbFKPcSBEhvcTghAdM93qYhglL2BRO2TRG6EH8Q=="
 
 "sqlgenerate@https://github.com/jdrew1303/sqlgenerate":
   version "1.2.1"
